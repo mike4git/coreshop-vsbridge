@@ -8,6 +8,7 @@ use CoreShop\Component\Core\Model\CartInterface;
 use CoreShop\Component\Core\Repository\ProductRepositoryInterface;
 use CoreShop\Component\Inventory\Model\StockableInterface;
 use CoreShop\Component\Order\Context\CartContextInterface;
+use CoreShop\Component\Order\Factory\CartItemFactory;
 use CoreShop\Component\Order\Manager\CartManagerInterface;
 use CoreShop\Component\Order\Model\CartItemInterface;
 use CoreShop\Component\Order\Model\PurchasableInterface;
@@ -74,15 +75,13 @@ class CartController extends Controller
         Request $request,
         CartResponse $cartResponse,
         TranslatorInterface $translator,
-        ProductRepositoryInterface $productRepository
+        ProductRepositoryInterface $productRepository,
+        CartItemFactory $cartItemFactory
     ) {
         $payload = json_decode($request->getContent(), true);
 
-        $attributeResolver = \Pimcore::getContainer()->get(AttributeResolver::class);
         $attributes = [];
-        if (isset($payload['cartItem']['product_option'])) {
-            $attributes = $attributeResolver->resolve($payload['cartItem']['product_option']);
-        }
+
         if (!isset($attributes['sku'])) {
             $attributes['sku'] = $payload['cartItem']['sku'];
         }
@@ -114,14 +113,16 @@ class CartController extends Controller
             }
         }
 
-        $item = $this->getCartModifier()->updateItemQuantity($this->getCart(), $product, $quantity);
+        $cartItem = $cartItemFactory->createWithPurchasable($product,$quantity);
+
+        $this->getCartModifier()->addToList($this->getCart(), $cartItem);
         $this->getCartManager()->persistCart($this->getCart());
 
         $this->get('coreshop.tracking.manager')->trackCartAdd($this->getCart(), $product, $quantity);
 
         return $this->json([
             'code'   => 200,
-            'result' => $cartResponse->singleCartItemResponse($item),
+            'result' => $cartResponse->singleCartItemResponse($cartItem),
         ]);
     }
 
@@ -178,7 +179,7 @@ class CartController extends Controller
      * @Route("/vsbridge/cart/shipping-methods", methods={"POST"})
      *
      * @param Request           $request
-     * @param CarrierRepository $carrierRepository
+     * @param RepositoryInterface $carrierRepository
      * @param CartResponse      $cartResponse
      *
      * @return JsonResponse
@@ -186,7 +187,7 @@ class CartController extends Controller
      */
     public function shippingMethods(
         Request $request,
-        CarrierRepository $carrierRepository,
+        RepositoryInterface $carrierRepository,
         CartResponse $cartResponse
     ) {
         $countryId = $request->get('address');
