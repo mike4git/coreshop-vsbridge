@@ -40,7 +40,7 @@ security:
         vsbridge_login:
             pattern:  ^/vsbridge/user/login$
             stateless: true
-            provider: customer_ldap_provider
+            provider: customer_provider
             gfreeau_get_jwt:
                 username_parameter: username
                 password_parameter: password
