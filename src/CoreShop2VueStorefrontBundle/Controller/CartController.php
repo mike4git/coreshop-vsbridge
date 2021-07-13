@@ -17,6 +17,7 @@ use CoreShop\Component\Shipping\Model\Carrier;
 use CoreShop\Component\StorageList\StorageListModifierInterface;
 use CoreShop2VueStorefrontBundle\Bridge\Response\Cart\CartResponse;
 use CoreShop2VueStorefrontBundle\Bridge\Attribute\AttributeResolver;
+use CoreShop2VueStorefrontBundle\Repository\RepositoryInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
