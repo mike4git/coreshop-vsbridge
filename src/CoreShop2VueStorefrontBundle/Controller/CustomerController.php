@@ -8,6 +8,7 @@ use CoreShop\Bundle\CustomerBundle\Pimcore\Repository\CustomerRepository;
 use CoreShop\Bundle\OrderBundle\Pimcore\Repository\OrderRepository;
 use CoreShop\Component\Core\Model\CustomerInterface;
 use CoreShop\Component\Pimcore\Routing\LinkGenerator;
+use CoreShop\Component\Resource\Repository\RepositoryInterface;
 use CoreShop2VueStorefrontBundle\Bridge\Customer\CustomerManager;
 use CoreShop2VueStorefrontBundle\Bridge\Response\Order\OrderResponse;
 use CoreShop2VueStorefrontBundle\Bridge\Response\ResponseBodyCreator;
@@ -191,12 +192,12 @@ class CustomerController extends AbstractController
     /**
      * @Route("/vsbridge/user/order-history", methods={"GET"})
      *
-     * @param OrderRepository $orderRepository
+     * @param RepositoryInterface $orderRepository
      * @param OrderResponse $orderResponse
      *
      * @return JsonResponse
      */
-    public function orderHistory(OrderRepository $orderRepository, OrderResponse $orderResponse)
+    public function orderHistory(RepositoryInterface $orderRepository, OrderResponse $orderResponse)
     {
         $customer = $this->getUser();
 
