@@ -8,6 +8,7 @@ use CoreShop\Bundle\CustomerBundle\Pimcore\Repository\CustomerRepository;
 use CoreShop\Bundle\OrderBundle\Pimcore\Repository\OrderRepository;
 use CoreShop\Component\Core\Model\CustomerInterface;
 use CoreShop\Component\Pimcore\Routing\LinkGenerator;
+use CoreShop\Component\Resource\Repository\RepositoryInterface;
 use CoreShop2VueStorefrontBundle\Bridge\Customer\CustomerManager;
 use CoreShop2VueStorefrontBundle\Bridge\Response\Order\OrderResponse;
 use CoreShop2VueStorefrontBundle\Bridge\Response\ResponseBodyCreator;

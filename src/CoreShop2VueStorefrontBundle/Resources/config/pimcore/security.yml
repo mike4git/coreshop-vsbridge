@@ -44,7 +44,7 @@ security:
             gfreeau_get_jwt:
                 username_parameter: username
                 password_parameter: password
-                authentication_provider: security.authentication.provider.dao
+                authentication_provider: security.authentication.provider.padmin
                 user_checker: security.user_checker
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
