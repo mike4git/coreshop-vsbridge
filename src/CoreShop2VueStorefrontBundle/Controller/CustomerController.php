@@ -191,12 +191,12 @@ class CustomerController extends AbstractController
     /**
      * @Route("/vsbridge/user/order-history", methods={"GET"})
      *
-     * @param OrderRepository $orderRepository
+     * @param RepositoryInterface $orderRepository
      * @param OrderResponse $orderResponse
      *
      * @return JsonResponse
      */
-    public function orderHistory(OrderRepository $orderRepository, OrderResponse $orderResponse)
+    public function orderHistory(RepositoryInterface $orderRepository, OrderResponse $orderResponse)
     {
         $customer = $this->getUser();
 
