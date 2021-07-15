@@ -114,12 +114,26 @@ class CartController extends Controller
             }
         }
 
-        $cartItem = $cartItemFactory->createWithPurchasable($product,$quantity);
+        $cart = $this->getCart();
 
-        $this->getCartModifier()->addToList($this->getCart(), $cartItem);
-        $this->getCartManager()->persistCart($this->getCart());
+        $itemInCart = $this->getCartItemBySku($attributes['sku']);
 
-        $this->get('coreshop.tracking.manager')->trackCartAdd($this->getCart(), $product, $quantity);
+        if(!isset($itemInCart)) {
+            $cartItem = $cartItemFactory->createWithCart($cart, $product, $quantity);
+        }else{
+            $itemInCart->setQuantity(0);
+
+            $cartItem = clone $itemInCart;
+            $cartItem->setQuantity($quantity);
+
+        }
+
+        $this->getCartModifier()->addToList($cart, $cartItem);
+        $this->getCartManager()->persistCart($cart);
+
+        $this->get('coreshop.tracking.manager')->trackCartAdd($cart, $product, $quantity);
+
+
 
         return $this->json([
             'code'   => 200,
@@ -150,7 +164,7 @@ class CartController extends Controller
             ]);
         }
 
-        $cartItem = $this->getCart()->getItemForProduct($product);
+        $cartItem = $this->getCartItemBySku($product->getSku());
 
         if (!$cartItem instanceof CartItemInterface) {
             return $this->json([
@@ -164,7 +178,7 @@ class CartController extends Controller
             ]);
         }
 
-        $this->getCartModifier()->removeItem($this->getCart(), $cartItem);
+        $this->getCartModifier()->removeFromList($this->getCart(), $cartItem);
         $this->getCartManager()->persistCart($this->getCart());
 
         $this->get('coreshop.tracking.manager')->trackCartRemove($this->getCart(), $cartItem->getProduct(),
@@ -245,6 +259,19 @@ class CartController extends Controller
             'result' => $cartResponse->paymentMethodsResponse($providers),
         ]);
 
+    }
+
+    private function getCartItemBySku(string $sku){
+        $items = $this->getCart()->getItems();
+        foreach ($items as $item)
+        {
+            if($item->getProduct()->getSku() == $sku)
+            {
+                return $item;
+            }
+        }
+
+        return null;
     }
 
     /**
