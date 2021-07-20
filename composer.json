@@ -19,7 +19,7 @@
     "coreshop/core-shop": "^3.0",
     "gesdinet/jwt-refresh-token-bundle": "^0.5.3",
     "gfreeau/get-jwt-bundle": "^2.0",
-    "ongr/elasticsearch-bundle": "dev-master",
+    "ongr/elasticsearch-bundle": "^7.0",
     "lexik/jwt-authentication-bundle": "^2.5",
     "nelmio/cors-bundle": "^1.5",
     "pimcore/pimcore": "^5.8 | ^6.0 | ^10.0",
