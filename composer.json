@@ -23,7 +23,7 @@
     "lexik/jwt-authentication-bundle": "^2.5",
     "nelmio/cors-bundle": "^1.5",
     "pimcore/pimcore": "^5.8 | ^6.0 | ^10.0",
-    "symfony-bundles/json-request-bundle": "^2.0"
+    "symfony-bundles/json-request-bundle": "^4.0"
   },
   "require-dev": {
     "cache/integration-tests": "^0.15.0",
