@@ -116,7 +116,7 @@ final class CartContext implements CartContextInterface
         $cart->setKey(uniqid());
         $cart->setPublished(true);
         $cart->setCurrency(
-            \Pimcore::getContainer()->get('coreshop.repository.currency')->getByCode('pln')
+            $store->getCurrency() ?? \Pimcore::getContainer()->get('coreshop.repository.currency')->getByCode('eur')
         );
         $cartManager->persistCart($cart);
 

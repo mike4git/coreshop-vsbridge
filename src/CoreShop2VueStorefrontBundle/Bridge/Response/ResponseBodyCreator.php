@@ -59,8 +59,9 @@ class ResponseBodyCreator
         $response['id'] = $customer->getId();
         $response['group_id'] = 1;
 
-        $address = $customer->getDefaultAddress();
-        $response['default_shipping'] = $address->getId();
+        $defaultAddress = $customer->getDefaultAddress();
+        $response['default_shipping'] = $defaultAddress->getId();
+        $response['default_billing'] = $defaultAddress->getId();
 
         $response = $this->formatDateTimeFields($customer, $response);
 
@@ -69,7 +70,10 @@ class ResponseBodyCreator
         $response['lastname'] = $customer->getLastname();
         $response['store_id'] = 1;
         $response['website_id'] = 1;
-        $response['addresses'][] = $this->getAddress($address, $customer->getId());
+        foreach ($customer->getAddresses() as $address) {
+            $default = $address->getId() == $defaultAddress->getId();
+            $response['addresses'][] = $this->getAddress($address, $customer->getId(), $default);
+        }
 
         $response['disable_auto_group_change'] = 0;
 
@@ -83,27 +87,27 @@ class ResponseBodyCreator
         return $response;
     }
 
-    private function getAddress(AddressInterface $defaultAddress, int $customerId): array
+    private function getAddress(AddressInterface $customerAdress, int $customerId, $default = false): array
     {
         $address = [];
 
-        $address['id'] = $defaultAddress->getId();
+        $address['id'] = $customerAdress->getId();
         $address['customer_id'] = $customerId;
         $address['region']['region_code'] = null;
         $address['region']['region'] = null;
         $address['region']['region_id'] = 0;
         $address['region_id'] = 0;
-        if (!is_null($defaultAddress->getCountry())) {
-            $address['country_id'] = $defaultAddress->getCountry()->getIsoCode();
+        if (!is_null($customerAdress->getCountry())) {
+            $address['country_id'] = $customerAdress->getCountry()->getIsoCode();
         }
-        $address['street'][] = $defaultAddress->getStreet();
-        $address['street'][] = $defaultAddress->getNumber();
-        $address['telephone'] = $defaultAddress->getPhoneNumber();
-        $address['postcode'] = $defaultAddress->getPostcode();
-        $address['city'] = $defaultAddress->getCity();
-        $address['firstname'] = $defaultAddress->getFirstname();
-        $address['lastname'] = $defaultAddress->getLastname();
-        $address['default_shipping'] = true;
+        $address['street'][] = $customerAdress->getStreet();
+        $address['street'][] = $customerAdress->getNumber();
+        $address['telephone'] = $customerAdress->getPhoneNumber();
+        $address['postcode'] = $customerAdress->getPostcode();
+        $address['city'] = $customerAdress->getCity();
+        $address['firstname'] = $customerAdress->getFirstname();
+        $address['lastname'] = $customerAdress->getLastname();
+        $address['default_shipping'] = $default;
 
         return $address;
     }

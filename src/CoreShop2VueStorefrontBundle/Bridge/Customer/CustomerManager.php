@@ -8,12 +8,13 @@ use CoreShop\Bundle\CoreBundle\Doctrine\ORM\CountryRepository;
 use CoreShop\Bundle\CustomerBundle\Pimcore\Repository\CustomerRepository;
 use CoreShop\Component\Address\Model\AddressInterface;
 use CoreShop\Component\Core\Model\CustomerInterface;
+use CoreShop\Component\Pimcore\DataObject\ObjectServiceInterface;
 use CoreShop\Component\Resource\Factory\PimcoreFactoryInterface;
 use LogicException;
 
 class CustomerManager
 {
-    const DEFAULT_COUNTRY_CODE = "PL";
+    const DEFAULT_COUNTRY_CODE = "DE";
 
     /** @var RegistrationService */
     private $registrationService;
@@ -26,18 +27,23 @@ class CustomerManager
     /** @var CustomerRepository */
     private $customerRepository;
 
+    private $objectService;
+
     public function __construct(
         PimcoreFactoryInterface $customerFactory,
         PimcoreFactoryInterface $addressFactory,
+        ObjectServiceInterface $objectService,
         RegistrationService $registrationService,
         CountryRepository $countryRepository,
         CustomerRepository $customerRepository
-    ) {
+    )
+    {
         $this->customerFactory = $customerFactory;
         $this->addressFactory = $addressFactory;
         $this->registrationService = $registrationService;
         $this->countryRepository = $countryRepository;
         $this->customerRepository = $customerRepository;
+        $this->objectService = $objectService;
     }
 
     /**
@@ -90,28 +96,49 @@ class CustomerManager
         $customer->setLastname($customerData['lastname']);
         $customer->save();
 
-        $address = $customer->getDefaultAddress();
+        $addresses = $customer->getAddresses();
 
-        $addressData = $customerData['addresses'][0] ?? [];
-
-        if (!empty($addressData)) {
-            if (!is_null($this->countryRepository->findByCode($addressData['country_id']))) {
-                $byCodeCountryId = $this->countryRepository->findByCode($addressData['country_id'])->getId();
-                $addressData['country_id'] = $byCodeCountryId;
+        foreach ($customerData['addresses'] as $requestAddress) {
+            $address = null;
+            if (array_key_exists('id', $requestAddress)) {
+                foreach ($addresses as $customerAddress) {
+                    if ($customerAddress->getId() == $requestAddress['id']) {
+                        $address = $customerAddress;
+                        break;
+                    }
+                }
             }
+
+            if (!isset($address)) {
+                $address = $this->addressFactory->createNew();
+                $address->setPublished(true);
+                $address->setKey(uniqid());
+                $address->setParent($this->objectService->createFolderByPath(sprintf(
+                    '/%s/%s',
+                    $customer->getFullPath(),
+                    'addresses'
+                )));
+            }
+
+            if (!is_null($this->countryRepository->findByCode($requestAddress['country_id']))) {
+                $byCodeCountryId = $this->countryRepository->findByCode($requestAddress['country_id'])->getId();
+                $requestAddress['country_id'] = $byCodeCountryId;
+            }
+
+            $address->setLastname($requestAddress['lastname']);
+            $address->setFirstname($requestAddress['firstname']);
+            $address->setCompany($requestAddress['company']);
+            $address->setPostcode($requestAddress['postcode']);
+            $address->setCity($requestAddress['city']);
+            $address->setPhoneNumber($requestAddress['telephone']);
+            $address->setCountry($requestAddress['country_id']);
+            $address->setStreet($requestAddress['street'][0]);
+            $address->setNumber($requestAddress['street'][1]);
+            $address->save();
+
+            $customer->addAddress($address);
         }
-
-        $address->setLastname($addressData['lastname']);
-        $address->setFirstname($addressData['firstname']);
-        $address->setCompany($addressData['company']);
-        $address->setPostcode($addressData['postcode']);
-        $address->setCity($addressData['city']);
-        $address->setPhoneNumber($addressData['telephone']);
-        $address->setCountry($addressData['country_id']);
-        $address->setStreet($addressData['street'][0]);
-        $address->setNumber($addressData['street'][1]);
-        $address->save();
-
+        $customer->save();
         return $customer;
     }
 }

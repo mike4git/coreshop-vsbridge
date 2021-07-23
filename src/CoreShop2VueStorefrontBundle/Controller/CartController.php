@@ -17,7 +17,7 @@ use CoreShop\Component\Shipping\Model\Carrier;
 use CoreShop\Component\StorageList\StorageListModifierInterface;
 use CoreShop2VueStorefrontBundle\Bridge\Response\Cart\CartResponse;
 use CoreShop2VueStorefrontBundle\Bridge\Attribute\AttributeResolver;
-use CoreShop2VueStorefrontBundle\Repository\RepositoryInterface;
+use CoreShop\Component\Core\Repository\CarrierRepositoryInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -194,7 +194,7 @@ class CartController extends Controller
      * @Route("/vsbridge/cart/shipping-methods", methods={"POST"})
      *
      * @param Request           $request
-     * @param RepositoryInterface $carrierRepository
+     * @param CarrierRepositoryInterface $carrierRepository
      * @param CartResponse      $cartResponse
      *
      * @return JsonResponse
@@ -202,7 +202,7 @@ class CartController extends Controller
      */
     public function shippingMethods(
         Request $request,
-        RepositoryInterface $carrierRepository,
+        CarrierRepositoryInterface $carrierRepository,
         CartResponse $cartResponse
     ) {
         $countryId = $request->get('address');
