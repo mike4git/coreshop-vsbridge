@@ -137,7 +137,7 @@ class CartResponse extends ResponseBodyCreator
      *
      * @todo handle discounts, translations, currency, payload, different rates VAT
      */
-    public function shippingInformationResponse($cart, array $providers, array $payload): array
+    public function shippingInformationResponse(CartInterface $cart, array $providers, array $payload): array
     {
         $items = [];
         $totalQty = 0;
@@ -168,29 +168,37 @@ class CartResponse extends ResponseBodyCreator
                 'name'                    => $purchasable->getName(),
             ];
         }
+
+        $shippingValue = $this->formatPrice($cart->getShipping());
+        $shippingValueWithoutTax = $this->formatPrice($cart->getShipping(false));
+        $totalValue = $this->formatPrice($cart->getTotal());
+        $subTotalValue = $this->formatPrice($cart->getSubtotal());
+        $totalTaxValue = $this->formatPrice($cart->getTotalTax());
+        $shippingTaxValue = $this->formatPrice($cart->getShippingTax());
+
         $ret   = [
             'payment_methods' => $this->paymentMethodsResponse($providers),
             'totals'          => [
-                'grand_total'                   => $cart->getTotal(),
-                'base_grand_total'              => $cart->getSubtotal(),
-                'subtotal'                      => $cart->getSubtotal(),
-                'base_subtotal'                 => $cart->getSubtotal(),
+                'grand_total'                   => $totalValue,
+                'base_grand_total'              => $subTotalValue,
+                'subtotal'                      => $subTotalValue,
+                'base_subtotal'                 => $subTotalValue,
                 'discount_amount'               => 0,
                 'base_discount_amount'          => 0,
-                'subtotal_with_discount'        => $cart->getSubtotal(),
-                'base_subtotal_with_discount'   => $cart->getSubtotal(),
-                'shipping_amount'               => $cart->getShipping(false),
-                'base_shipping_amount'          => $cart->getShipping(false),
+                'subtotal_with_discount'        => $subTotalValue,
+                'base_subtotal_with_discount'   => $subTotalValue,
+                'shipping_amount'               => $shippingValueWithoutTax,
+                'base_shipping_amount'          => $shippingValueWithoutTax,
                 'shipping_discount_amount'      => 0,
                 'base_shipping_discount_amount' => 0,
-                'tax_amount'                    => $cart->getTotalTax(),
-                'base_tax_amount'               => $cart->getTotalTax(),
+                'tax_amount'                    => $totalTaxValue,
+                'base_tax_amount'               => $totalTaxValue,
                 'weee_tax_applied_amount'       => null,
-                'shipping_tax_amount'           => $cart->getShippingTax(),
-                'base_shipping_tax_amount'      => $cart->getShippingTax(),
-                'subtotal_incl_tax'             => $cart->getSubtotal(),
-                'shipping_incl_tax'             => $cart->getShipping(),
-                'base_shipping_incl_tax'        => $cart->getShipping(),
+                'shipping_tax_amount'           => $shippingTaxValue,
+                'base_shipping_tax_amount'      => $shippingTaxValue,
+                'subtotal_incl_tax'             => $subTotalValue,
+                'shipping_incl_tax'             => $shippingValue,
+                'base_shipping_incl_tax'        => $shippingValue,
                 'base_currency_code'            => 'USD',
                 'quote_currency_code'           => 'USD',
                 'items_qty'                     => $totalQty,
@@ -199,12 +207,12 @@ class CartResponse extends ResponseBodyCreator
                     0 => [
                         'code'  => 'subtotal',
                         'title' => 'Subtotal',
-                        'value' => $cart->getSubtotal(),
+                        'value' => $subTotalValue,
                     ],
                     1 => [
                         'code'  => 'shipping',
                         'title' => 'Shipping & Handling (Flat Rate - Fixed)',
-                        'value' => $cart->getShipping(),
+                        'value' => $shippingValue,
                     ],
                     2 => [
                         'code'  => 'discount',
@@ -214,12 +222,12 @@ class CartResponse extends ResponseBodyCreator
                     3 => [
                         'code'                 => 'tax',
                         'title'                => 'Tax',
-                        'value'                => $cart->getTotalTax(),
+                        'value'                => $totalTaxValue,
                         'area'                 => 'taxes',
                         'extension_attributes' => [
                             'tax_grandtotal_details' => [
                                 0 => [
-                                    'amount'   => $cart->getTotalTax(),
+                                    'amount'   => $totalTaxValue,
                                     'rates'    => [
                                         0 => [
                                             'percent' => '23',
@@ -234,7 +242,7 @@ class CartResponse extends ResponseBodyCreator
                     4 => [
                         'code'  => 'grand_total',
                         'title' => 'Grand Total',
-                        'value' => $cart->getTotal(),
+                        'value' => $totalValue,
                         'area'  => 'footer',
                     ],
                 ],
@@ -258,5 +266,10 @@ class CartResponse extends ResponseBodyCreator
             ];
         }
         return $ret;
+    }
+
+    private function formatPrice($price)
+    {
+        return $price > 0 ? $price / 100 : $price;
     }
 }

@@ -18,6 +18,7 @@ use CoreShop\Component\StorageList\StorageListModifierInterface;
 use CoreShop2VueStorefrontBundle\Bridge\Response\Cart\CartResponse;
 use CoreShop2VueStorefrontBundle\Bridge\Attribute\AttributeResolver;
 use CoreShop\Component\Core\Repository\CarrierRepositoryInterface;
+use CoreShop\Component\Core\Repository\PaymentProviderRepositoryInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -206,12 +207,17 @@ class CartController extends Controller
         CartResponse $cartResponse
     ) {
         $countryId = $request->get('address');
-        /** @var Carrier $defaultMethod */
-        $defaultMethod = $carrierRepository->findOneBy(['identifier' => 'default']);
 
+        $methods = $carrierRepository->findAll();
+        $result = [];
+
+        /** @var Carrier $method */
+        foreach ($methods as $method){
+            $result[] = $cartResponse->shippingMethodsResponse($method);
+        }
         return $this->json([
             'code' => 200,
-            'result' => $cartResponse->shippingMethodsResponse($defaultMethod),
+            'result' => $result,
         ]);
     }
 
@@ -226,7 +232,7 @@ class CartController extends Controller
      */
     public function shippingInformation(
         Request $request,
-        PaymentProviderRepository $paymentProviderRepository,
+        PaymentProviderRepositoryInterface $paymentProviderRepository,
         CartResponse $cartResponse
     ) {
         /** @var PaymentProviderInterface $providers */
@@ -249,7 +255,7 @@ class CartController extends Controller
      * @return JsonResponse
      */
     public function paymentMethods(
-        PaymentProviderRepository $paymentProviderRepository,
+        PaymentProviderRepositoryInterface $paymentProviderRepository,
         CartResponse $cartResponse
     ) {
         /** @var PaymentProviderInterface $providers */
