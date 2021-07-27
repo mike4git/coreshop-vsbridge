@@ -192,7 +192,7 @@ class CartController extends Controller
     }
 
     /**
-     * @Route("/vsbridge/cart/shipping-methods", methods={"POST"})
+     * @Route("/vsbridge/cart/shipping-methods", methods={"POST","GET"})
      *
      * @param Request           $request
      * @param CarrierRepositoryInterface $carrierRepository
@@ -233,15 +233,26 @@ class CartController extends Controller
     public function shippingInformation(
         Request $request,
         PaymentProviderRepositoryInterface $paymentProviderRepository,
+        CarrierRepositoryInterface $carrierRepository,
         CartResponse $cartResponse
     ) {
         /** @var PaymentProviderInterface $providers */
         $providers = $paymentProviderRepository->findActive();
         $payload   = json_decode($request->getContent(), true);
 
+        $cart = $this->getCart();
+        $carrierCode = $payload['addressInformation']['shippingCarrierCode'] ?? null;
+        if(isset($carrierCode)) {
+            $carrier = $carrierRepository->findOneBy(['identifier' => $carrierCode]);
+            $cart->setCarrier($carrier);
+            $cart->setNeedsRecalculation(true);
+            $cart->recalculateAdjustmentsTotal();
+            $cart->save();
+        }
+
         return $this->json([
             'code' => 200,
-            'result' => $cartResponse->shippingInformationResponse($this->getCart(), $providers, $payload),
+            'result' => $cartResponse->shippingInformationResponse($cart, $providers, $payload),
         ]);
 
     }

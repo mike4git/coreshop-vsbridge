@@ -84,12 +84,12 @@ class CartResponse extends ResponseBodyCreator
         $defaultShipping['method_code']    = $defaultMethod->getIdentifier();
         $defaultShipping['carrier_title']  = $defaultMethod->getTitle();
         $defaultShipping['method_title']   = $defaultMethod->getTitle();
-        $defaultShipping['amount']         = 5;
-        $defaultShipping['base_amount']    = 5;
+        $defaultShipping['amount']         = 0;
+        $defaultShipping['base_amount']    = 0;
         $defaultShipping['available']      = true;
         $defaultShipping['error_message']  = "";
-        $defaultShipping['price_excl_tax'] = 5;
-        $defaultShipping['price_incl_tax'] = 5;
+        $defaultShipping['price_excl_tax'] = 0;
+        $defaultShipping['price_incl_tax'] = 0;
 
         return $defaultShipping;
     }
@@ -199,8 +199,8 @@ class CartResponse extends ResponseBodyCreator
                 'subtotal_incl_tax'             => $subTotalValue,
                 'shipping_incl_tax'             => $shippingValue,
                 'base_shipping_incl_tax'        => $shippingValue,
-                'base_currency_code'            => 'USD',
-                'quote_currency_code'           => 'USD',
+                'base_currency_code'            => 'EUR',
+                'quote_currency_code'           => 'EUR',
                 'items_qty'                     => $totalQty,
                 'items'                         => $items,
                 'total_segments'                => [
